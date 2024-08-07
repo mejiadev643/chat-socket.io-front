@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useMainStore }  from "@/store/store.js";
+import { useMainStore } from "@/store/store.js";
 import Login from '@login/views/Login.vue';
 import About from '@login/views/About.vue';
-import isAlive from '@network/isAlive.js';
-
+import isAliveService from '@network/isAlive.js'; // Renombrar la importación para evitar conflictos
+import dashboardroutes from '@modules/dashboard/router/router.js';
 
 const routes = [
   {
@@ -15,6 +15,7 @@ const routes = [
       requiresAuth: false,
     }
   },
+  ...dashboardroutes,
   {
     path: '/about',
     name: 'About',
@@ -30,7 +31,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 });
-router.afterEach((to, from, next) => {
+
+router.beforeEach(async (to, from, next) => {
   // Utiliza `to.meta.title` si está definido, de lo contrario, usa un título por defecto.
   document.title = to.meta.title || 'Default title';
   
@@ -41,22 +43,35 @@ router.afterEach((to, from, next) => {
     next({ name: "login" });
     return;
   }
+
   if (to.meta.requiresAuth === true) {
     const store = useMainStore();
     const token = store.getToken();
+    if (!routeExists) {
+      next({ name: "login" });
+      return;
+    }
+
     if (!token) {
       next({ name: "login" });
       return;
-    }else{
-      //hacer la prueba de si el token es valido
-      let isAlive = isAlive();
-      if(isAlive.status !== 200){
-        next({ name: "login" });
-      }else{
-        next();
-      }
+    } else {
+        try {
+          // Hacer la prueba de si el token es válido
+          const response = await isAliveService.isAlive();
+          if (response.status !== 200) {
+            next({ name: "login" });
+          } else {
+            next();
+          }
+        } catch (error) {
+          // Manejar el error en la llamada al backend
+          next({ name: "login" });
+        }
     }
-  };
+  } else {
+    next();
+  }
 });
 
 export default router;

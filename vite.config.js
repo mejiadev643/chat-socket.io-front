@@ -11,6 +11,7 @@ export default defineConfig({
       '@login': path.resolve(__dirname, './src/modules/login'),
       '@network': path.resolve(__dirname, './src/services'),
       '@modules': path.resolve(__dirname, './src/modules'),
+      '@store': path.resolve(__dirname, './src/store'),
     }
   },
   server:{

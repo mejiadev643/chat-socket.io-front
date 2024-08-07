@@ -1,4 +1,5 @@
 import axios from "axios";
+import {useMainStore} from "@store/store.js";
 
 const config = {
     baseURL: import.meta.env.VITE_VUE_APP_API_URL + '/api' || 'http://localhost:3000/api',
@@ -11,7 +12,7 @@ const config = {
 const instance = axios.create(config);
 instance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = useMainStore().getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
