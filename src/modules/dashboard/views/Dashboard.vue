@@ -7,14 +7,12 @@
                 <div class="flex h-full border rounded shadow-lg border-grey">
 
                     <!-- Left -->
-                    <div class="flex flex-col w-1/3 border">
+                    <div class="flex flex-col w-1/3">
 
                         <!-- Header -->
                         <div class="flex flex-row items-center justify-between px-3 py-2 bg-grey-lighter">
                             <div>
-                                <img class="w-10 h-10 rounded-full"
-                                    :src="gravatarUrl"
-                                    @error="setDefaultImage"/>
+                                <img class="w-10 h-10 rounded-full" :src="avatar" />
                                 <!-- <Image class="w-10 h-10 rounded-full" src="https://0.gravatar.com/avatar/33252cd1f33526af53580fcb1736172f06e6716f32afdd1be19ec3096d15dea5" alt="Image" width="250" preview /> -->
                             </div>
 
@@ -33,13 +31,17 @@
                                         </path>
                                     </svg>
                                 </div>
-                                <div class="ml-4">
+                                <!-- <div class="ml-4" >
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                                         <path fill="#263238" fill-opacity=".6"
                                             d="M12 7a2 2 0 1 0-.001-4.001A2 2 0 0 0 12 7zm0 2a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 9zm0 6a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 15z">
                                         </path>
                                     </svg>
+                                </div> -->
+                                <div class="ml-4">
+                                    <Menu/>
                                 </div>
+                                
                             </div>
                         </div>
 
@@ -278,29 +280,30 @@
     </div>
 </template>
 <script setup>
-import Image from 'primevue/image';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from "@store/user.js";
-import CryptoJS from 'crypto-js';
+import gravatarService from '../services/gravatar.service';
+import Menu from '@modules/dashboard/components/Menu.vue';
 const userStore = useUserStore();
 const router = useRouter();
 const nombre = ref(userStore.getUser());
 const email = ref(userStore.getEmail());
 const avatar = ref('');
 const gravatarUrl = ref('');
-const setDefaultImage = "https://darrenjameseeley.files.wordpress.com/2014/09/expendables3.jpeg";
 
 
-async function getGravatarUrl(){
-    const lowerCaseEmail = email.value.trim().toLowerCase();
-    const md5Hash = CryptoJS.MD5(lowerCaseEmail).toString();
-    gravatarUrl.value = `https://www.gravatar.com/avatar/${md5Hash}`;
-    //gravatarUrl.value = import.meta.env.API_GRAVATAR_AVATAR + md5Hash;
+async function gravatar() {
+    gravatarService.getGravatarUrl(email.value).then((response) => {
+        if (response?.status === 200) {
+            avatar.value = response.data.avatar_url;
+        }else{
+            avatar.value = './img/default.jpg';
+        }
+    });
 }
-
 onMounted(() => {
-    getGravatarUrl();
+    gravatar();
 });
 
 </script>
