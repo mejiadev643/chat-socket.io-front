@@ -13,15 +13,14 @@
                         <div class="flex flex-row items-center justify-between px-3 py-2 bg-grey-lighter">
                             <div>
                                 <img class="w-10 h-10 rounded-full" :src="avatar" />
-                                <!-- <Image class="w-10 h-10 rounded-full" src="https://0.gravatar.com/avatar/33252cd1f33526af53580fcb1736172f06e6716f32afdd1be19ec3096d15dea5" alt="Image" width="250" preview /> -->
                             </div>
 
                             <div class="flex">
-                                
+
                                 <div class="ml-4">
-                                    <Menu/>
+                                    <Menu />
                                 </div>
-                                
+
                             </div>
                         </div>
 
@@ -29,7 +28,15 @@
                         <div class="px-2 py-2 bg-grey-lightest">
                             <input type="text" v-model="search" class="w-full px-2 py-2 text-sm"
                                 placeholder="Search or start new chat" />
+                            <div class="px-2 py-2 bg-grey-lightest">
+                                <ul>
+                                    <li v-for="result in searchResults" :key="result.id">
+                                        {{ result.username }}
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
+
 
                         <!-- Contacts -->
                         <div class="flex-1 overflow-auto bg-grey-lighter">
@@ -52,6 +59,7 @@
                                     </p>
                                 </div>
                             </div>
+                            <ChatList/>
                         </div>
 
                     </div>
@@ -263,40 +271,47 @@
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from "@store/user.js";
-import gravatarService from '../services/gravatar.service';
+import gravatarService from '../../../services/gravatar.service';
 import dashboardService from '../services/dashboard.service';
 import { debounce } from 'lodash';//para esperar a que el usuario deje de escribir
 import Menu from '@modules/dashboard/components/Menu.vue';
+import ChatList from '@modules/dashboard/components/ChatList.vue';
 const userStore = useUserStore();
 const router = useRouter();
 const nombre = ref(userStore.getUser());
 const email = ref(userStore.getEmail());
 const avatar = ref('');
 const search = ref('');
+const searchResults = ref([]);
 
 async function gravatar() {
-    gravatarService.getGravatarUrl(email.value).then((response) => {
+    const response = await gravatarService.getGravatarUrl(email.value);
+
+    if (response?.status === 200) {
+        avatar.value = response.data.avatar_url;
+    } else {
+        avatar.value = './img/default.jpg';
+    }
+};
+
+
+    // #region busqueda y debounce
+    async function searchUsers() {
+        const response = await dashboardService.search(search.value);
         if (response?.status === 200) {
-            avatar.value = response.data.avatar_url;
-        }else{
-            avatar.value = './img/default.jpg';
+            searchResults.value = response.data?.user;
+            console.log(searchResults.value);
         }
+    }
+    const debouncedSearchUsers = debounce(searchUsers, 700); // 700 ms de espera
+    onMounted(() => {
+        gravatar();
     });
-}
-async function searchUsers() {
-    dashboardService.search(search.value).then((response) => {
-        if (response?.status === 200) {
-            console.log(response.data);
-        }
+    watch(search, async (value) => {
+        console.log(value);
+        debouncedSearchUsers();
     });
-}
-const debouncedSearchUsers = debounce(searchUsers, 700); // 700 ms de espera
-onMounted(() => {
-    gravatar();
-});
-watch(search,  async (value) => {
-    console.log(value);
-    debouncedSearchUsers();
-});
+// #endregion
+
 
 </script>

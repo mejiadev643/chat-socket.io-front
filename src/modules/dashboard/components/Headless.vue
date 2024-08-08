@@ -22,17 +22,12 @@
 </template>
 
 <script setup>
+import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 
 const confirm = useConfirm();
 const toast = useToast();
-const props = defineProps({
-    confirm: {
-        type: Boolean,
-        default: false
-    }
-});
 
 const requireConfirmation = () => {
     confirm.require({

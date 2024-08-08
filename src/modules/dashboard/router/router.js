@@ -9,4 +9,9 @@ export default [
           requiresAuth: true,
         }
       },
+      {
+        path: '/dash',
+        name: 'Dashboard',
+        component: () => import("@modules/dashboard/views/DashboardChat.vue"),
+      },
 ]

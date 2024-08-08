@@ -27,7 +27,6 @@ import { ref } from "vue";
 import { useRouter } from 'vue-router';
 import Headless from './Headless.vue';
 
-// import Headless from './Headless.vue';
 
 const router = useRouter();
 

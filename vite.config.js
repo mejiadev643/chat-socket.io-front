@@ -12,6 +12,7 @@ export default defineConfig({
       '@network': path.resolve(__dirname, './src/services'),
       '@modules': path.resolve(__dirname, './src/modules'),
       '@store': path.resolve(__dirname, './src/store'),
+      '@img':path.resolve(__dirname, './src/public/img'),
     }
   },
   server:{
